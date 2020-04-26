@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<model name="AirConditioner_out">
+	<point id="123456789" parent="AirConditioner_out">
+		<posx>3</posx>
+		<posy>4</posy>
+		<posz>1</posz>
+		<info>24242425</info>
+		<formule enable="1" type="1">
+			<b>2.2</b>
+			<c>3.3</c>
+		</formule>
+	</point>
+	<point id="987654321" parent="AirConditioner_out">
+		<posx>1</posx>
+		<posy>0</posy>
+		<posz>3</posz>
+		<info>sdsdssdsf</info>
+		<formule enable="1" type="0" link="123456789">			
+		</formule>
+	</point>
+</model>

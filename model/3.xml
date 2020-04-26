@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<model name="3">
+	<point id="123456789">
+		<posx>3</posx>
+		<posy>4</posy>
+		<posz>1</posz>
+		<info>sdsdssdsf</info>
+	</point>
+	<point id="222222">
+		<posx>1</posx>
+		<posy>0</posy>
+		<posz>3</posz>
+		<info>sdsdssdsf</info>
+	</point>
+</model>

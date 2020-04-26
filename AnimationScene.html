@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<title>动画测试场景</title>
+<style>
+    html, body {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+    }
+
+    #renderCanvas {
+        width: 100%;
+        height: 100%;
+        touch-action: none;
+    }
+</style>
+<script src="babylonJS/babylon.js"></script>
+<script src="babylonJS/loaders/babylonjs.loaders.min.js"></script>
+<script src='babylonJS/gui/babylon.gui.js'></script>");
+<script src='babylonJS/gui/babylon.gui.min.js'></script>");
+</body>
+
+<canvas id="renderCanvas" touch-action="none"></canvas> //touch-action="none" for best results from PEP
+
+<script>
+    var canvas = document.getElementById("renderCanvas"); // Get the canvas element
+    var engine = new BABYLON.Engine(canvas, true); // Generate the BABYLON 3D engine
+
+    /******* Add the create scene function ******/
+    var createScene = function () {
+
+        // Create the scene space
+        var scene = new BABYLON.Scene(engine);
+
+        // Add a camera to the scene and attach it to the canvas
+        var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2,  Math.PI / 4, 5, BABYLON.Vector3.Zero(), scene);
+        camera.attachControl(canvas, true);
+        var light = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(-1, 1, 0), scene);
+        return scene;
+    };
+    /******* End of the create scene function ******/
+
+    var scene = createScene(); //Call the createScene function
+
+    // Register a render loop to repeatedly render the scene
+    engine.runRenderLoop(function () {
+        scene.render();
+    });
+
+    // Watch for browser/canvas resize events
+    window.addEventListener("resize", function () {
+        engine.resize();
+    });
+
+    var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+    var  CreatObject = function () {
+
+        // Environment Texture
+        var hdrTexture = BABYLON.CubeTexture.CreateFromPrefilteredData("image/environment.dds", scene);
+
+        // Skybox
+        var hdrSkybox = BABYLON.Mesh.CreateBox("hdrSkyBox", 1000.0, scene);
+        var hdrSkyboxMaterial = new BABYLON.PBRMaterial("skyBox", scene);
+        hdrSkyboxMaterial.backFaceCulling = false;
+        hdrSkyboxMaterial.reflectionTexture = hdrTexture.clone();
+        hdrSkyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;
+        hdrSkyboxMaterial.microSurface = 1.0;
+        hdrSkyboxMaterial.disableLighting = true;
+        hdrSkybox.material = hdrSkyboxMaterial;
+        hdrSkybox.infiniteDistance = true;
+
+        var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene);
+        var box = BABYLON.Mesh.CreateBox("Box1", 2, scene);
+        box.position = new BABYLON.Vector3(5, 0, 0);
+        var plastic = new BABYLON.PBRMaterial("plastic", scene);
+        plastic.reflectionTexture = hdrTexture;
+        plastic.microSurface = 0.96;
+        plastic.directIntensity = 0;
+        plastic.alpha = 1;
+        // plastic.metallic = 0;
+        plastic.albedoColor = new BABYLON.Color3(0.206, 0.94, 1);
+        plastic.reflectivityColor = new BABYLON.Color3(0.003, 0.003, 0.003);
+        sphere.material = plastic;
+        box.material = plastic.clone();
+
+
+
+    }
+
+    var gizmoManager = new BABYLON.GizmoManager(scene)
+    gizmoManager.positionGizmoEnabled = true;
+
+    scene.onPointerDown = function (evt, pickResult) {
+        // if the click hits the ground object, we change the impact position
+        if (pickResult.hit) {
+            if(pickResult.pickedMesh.name != "hdrSkyBox")
+            {
+                var obj =  pickResult.pickedMesh;
+                MatUI(obj);
+            }
+
+        }
+
+    };
+
+    CreatObject();
+
+    var MatUI = function (obj)
+    {
+        var rect1 = new BABYLON.GUI.Rectangle();
+        rect1.left = "30%";
+        rect1.top = "-20%";
+        rect1.width = "20%";
+        rect1.height = "30%";
+        rect1.cornerRadius = 20;
+        rect1.color = "Orange";
+        rect1.thickness = 4;
+        rect1.background = "white";
+        advancedTexture.addControl(rect1);
+
+        var text = new BABYLON.GUI.TextBlock();
+        text.top = "-45%";
+        text.text = "动画编辑面板";
+        text.color = "black";
+        text.fontSize = 15;
+        text.fontStyle.bold();
+        rect1.addControl(text);
+
+        let titleGroup = ["位置：","角度：","缩放：","动画时长(s)："];
+        let axisGroup = ["X:", "Y:", "Z:"];
+        let inputGroup = new Array(10);
+        for(let i = 0; i < titleGroup.length; i++) {
+            let Titletext = new BABYLON.GUI.TextBlock();
+            let topvalue = -100 + i * 50;
+            Titletext.top = topvalue.toString();
+            Titletext.left = "-35%";
+            Titletext.text = titleGroup[i];
+            Titletext.color = "black";
+            Titletext.fontSize = 10;
+            Titletext.fontStyle.bold();
+            rect1.addControl(Titletext);
+
+            for (let j = 0; j < axisGroup.length; j++) {
+                if (i == titleGroup.length - 1)
+                    break;
+
+                //标题
+                var axistext = new BABYLON.GUI.TextBlock();
+                let atopvalue = -80 + i * 50;
+                axistext.top = atopvalue.toString();
+                let aleftvalue = -30 + j * 25;
+                axistext.left = aleftvalue.toString() + "%";
+                axistext.text = axisGroup[j];
+                axistext.color = "black";
+                axistext.fontSize = 10;
+                axistext.fontStyle.bold();
+                rect1.addControl(axistext);
+
+
+            }
+        }
+
+        for(let i = 0; i < 3; i++)
+        {
+            for (let j = 0; j < 3; j++)
+            {
+                //输入框
+                inputGroup[i * 3 + j] = new BABYLON.GUI.InputText();
+                let inputtopvalue = -80 + i * 50;
+                inputGroup[i * 3 + j].top = inputtopvalue.toString();
+                let inputleftvalue = -18 + j * 25;
+                inputGroup[i * 3 + j].left = inputleftvalue.toString() + "%";
+                inputGroup[i * 3 + j].width = "20%";
+                inputGroup[i * 3 + j].height = "10%";
+                inputGroup[i * 3 + j].color = "white";
+                inputGroup[i * 3 + j].background = "green";
+                inputGroup[i * 3 + j].fontSize = 10;
+                switch (i) {
+                    case 0:
+                        switch (j) {
+                            case 0:
+                                inputGroup[i*3 + j].text = obj.position.x.toFixed(2).toString();
+                                break;
+                            case 1:
+                                inputGroup[i*3 + j].text = obj.position.y.toFixed(2).toString();
+                                break;
+                            case 2:
+                                inputGroup[i*3 + j].text = obj.position.z.toFixed(2).toString();
+                                break;
+                            default:break;
+                        }
+                        break;
+                    case 1:
+                        switch (j) {
+                            case 0:
+                                inputGroup[i*3 + j].text = obj.rotation.x.toFixed(2).toString();
+                                break;
+                            case 1:
+                                inputGroup[i*3 + j].text = obj.rotation.y.toFixed(2).toString();
+                                break;
+                            case 2:
+                                inputGroup[i*3 + j].text = obj.rotation.z.toFixed(2).toString();
+                                break;
+                            default:break;
+                        }
+                        break;
+                    case 2:
+                        switch (j) {
+                            case 0:
+                                inputGroup[i*3 + j].text = obj.scaling.x.toFixed(2).toString();
+                                break;
+                            case 1:
+                                inputGroup[i*3 + j].text = obj.scaling.y.toFixed(2).toString();
+                                break;
+                            case 2:
+                                inputGroup[i*3 + j].text = obj.scaling.z.toFixed(2).toString();
+                                break;
+                            default:break;
+                        }
+                        break;
+                    default:break;
+                }
+                rect1.addControl(inputGroup[i * 3 + j]);
+            }
+        }
+        inputGroup[9] = new BABYLON.GUI.InputText();
+        inputGroup[9].top = "28%";
+        inputGroup[9].left = "-8%";
+        inputGroup[9].width = "30%";
+        inputGroup[9].height = "10%";
+        inputGroup[9].color = "white";
+        inputGroup[9].background = "green";
+        inputGroup[9].text = "0";
+        rect1.addControl(inputGroup[9]);
+
+        let button = BABYLON.GUI.Button.CreateSimpleButton("but2", "确定");
+        button.left = "-25%";
+        button.top = "45%";
+        button.height = "10%";
+        button.width = "30%";
+        button.color = "white";
+        button.background = "green";
+        button.fontSize = 10;
+        rect1.addControl(button);
+        button.onPointerDownObservable.add(function() {
+            let inputvalue = new Array(inputGroup.length);
+            for (var i = 0; i < inputvalue.length; i++)
+                inputvalue[i] = parseFloat(inputGroup[i].text);
+            StartAnimation(obj, inputvalue);
+           // rect1.isVisible = false;
+        });
+
+        let button1 = BABYLON.GUI.Button.CreateSimpleButton("but2", "停止");
+        button1.left = "25%";
+        button1.top = "45%";
+        button1.height = "10%";
+        button1.width = "30%";
+        button1.color = "white";
+        button1.background = "green";
+        button1.fontSize = 10;
+        rect1.addControl(button1);
+        button1.onPointerDownObservable.add(function() {
+            if(obj)
+            {
+                scene.stopAnimation(obj);
+            }
+        });
+
+
+
+    }
+
+    //时间单位s  距离m
+    var StartAnimation = function (obj, inputvalue)
+    {
+        if (inputvalue[inputvalue.length - 1] <= 0)
+            return;
+        if(obj.animations != null)
+            obj.animations = [];
+        var aniStyle = ["position", "rotation", "scaling"];
+        for (var i = 0; i < 3; i++)
+        {
+            var animation = new BABYLON.Animation("tutoAnimation", aniStyle[i], 30, BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
+                BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE);
+            // Animation keys
+            var start;
+            var end;
+            switch (i) {
+                case 0:
+                    start = obj.position;
+                    end = new BABYLON.Vector3(inputvalue[0], inputvalue[1], inputvalue[2]);
+                    break;
+                case 1:
+                    start = obj.rotation;
+                    end = new BABYLON.Vector3(inputvalue[3], inputvalue[4], inputvalue[5]);
+                    break;
+                case 2:
+                    start = obj.scaling;
+                    end = new BABYLON.Vector3(inputvalue[6], inputvalue[7], inputvalue[8]);
+                    break;
+                default:break;
+            }
+
+            // An array with all animation keys
+            var keys = [];
+            keys.push({
+                frame: 0,
+                value: start
+            });
+
+            keys.push({
+                frame: inputvalue[inputvalue.length - 1]*30,
+                value: end
+            });
+            keys.push({
+                frame: inputvalue[inputvalue.length - 1]*30*2,
+                value: start
+            });
+            animation.setKeys(keys);
+            obj.animations.push(animation);
+        }
+
+       scene.beginAnimation(obj, 0, inputvalue[inputvalue.length - 1]*30*2, true);
+
+    }
+</script>
+</body>
+</html>
